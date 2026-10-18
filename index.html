@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>3Quarters PDF Converter</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&display=swap">
+<style>
+:root{--bg:#eaf0f4;--surface:#fff;--ink:#12202e;--muted:#5b6b7a;--line:#cfd9e1;--accent:#0f7f86;--accent-ink:#fff;--coin:#f2b705;--coin-ink:#3b2a00;--err:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1720;--surface:#16232f;--ink:#e8eef3;--muted:#93a4b3;--line:#2a3b4a;--accent:#3cc3cb;--accent-ink:#06262a;--err:#ff8a80}}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45}
+main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+header{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.coin{flex:none;width:68px;height:68px;border-radius:50%;background:var(--coin);color:var(--coin-ink);display:grid;place-items:center;font-weight:800;font-size:22px;box-shadow:inset 0 0 0 4px rgba(0,0,0,.12),inset 0 0 0 6px rgba(255,255,255,.35)}
+h1{margin:0;font-size:25px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+header p{margin:4px 0 0;color:var(--muted);font-size:15px}
+section{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+h2{margin:0 0 10px;font-size:17px;font-weight:700}
+.drop{display:block;border:2px dashed var(--line);border-radius:12px;padding:26px 12px;text-align:center;cursor:pointer;color:var(--muted)}
+.drop strong{display:block;color:var(--ink);font-size:17px}
+.drop:focus-within,.drop.over{border-color:var(--accent)}
+.drop input{position:absolute;opacity:0;width:1px;height:1px}
+.fmts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.fmts label{position:relative}
+.fmts input{position:absolute;opacity:0}
+.fmts span{display:block;text-align:center;padding:12px 0;border:1.5px solid var(--line);border-radius:10px;font-weight:700;cursor:pointer}
+.fmts input:checked+span{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.fmts input:focus-visible+span,button:focus-visible{outline:3px solid var(--coin);outline-offset:2px}
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+li:first-child{border-top:0}
+li img{width:52px;height:52px;object-fit:cover;border-radius:8px;background:var(--bg);flex:none}
+.nm{flex:1;min-width:0}.nm b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px}.nm small{color:var(--muted)}
+.rm{border:0;background:none;color:var(--muted);font:inherit;font-size:22px;padding:6px 10px;cursor:pointer}
+.total{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;color:var(--muted);margin:12px 0}
+.total b{font-size:30px;color:var(--ink);letter-spacing:-.02em}
+.pay{width:100%;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:800;font-size:18px;padding:16px;cursor:pointer}
+.pay:disabled{opacity:.45;cursor:not-allowed}
+.note{margin:10px 0 0;font-size:13px;color:var(--muted)}
+.banner{background:var(--coin);color:var(--coin-ink);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-weight:700}
+.err{color:var(--err);font-size:14px;margin:8px 0 0}
+.res{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.res figure{margin:0}.res img{width:100%;border-radius:10px;border:1px solid var(--line);display:block;background:var(--bg)}
+.res a{display:block;margin-top:6px;font-size:14px;font-weight:700;color:var(--accent);overflow-wrap:anywhere}
+.res .pdf{aspect-ratio:3/4;display:grid;place-items:center;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-weight:800;font-size:28px;color:var(--muted)}
+.hide{display:none}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="coin" aria-hidden="true">75¢</div>
+  <div><h1>3Quarters PDF Converter</h1><p>Turn any picture into a PDF, JPG, PNG or WEBP. 75¢ each.</p></div>
+</header>
+
+<div class="banner hide" id="banner" role="status"></div>
+
+<section>
+  <h2>Add pictures</h2>
+  <label class="drop" id="drop"><strong>Tap to choose pictures</strong>JPG, PNG, WEBP, GIF, BMP or AVIF
+    <input id="file" type="file" accept="image/*" multiple></label>
+  <p class="err hide" id="err" role="alert"></p>
+</section>
+
+<section>
+  <h2>Convert to</h2>
+  <div class="fmts" role="radiogroup" aria-label="Output format">
+    <label><input type="radio" name="fmt" value="application/pdf" checked><span>PDF</span></label>
+    <label><input type="radio" name="fmt" value="image/jpeg"><span>JPG</span></label>
+    <label><input type="radio" name="fmt" value="image/png"><span>PNG</span></label>
+    <label><input type="radio" name="fmt" value="image/webp"><span>WEBP</span></label>
+  </div>
+</section>
+
+<section>
+  <h2>Your pictures</h2>
+  <p class="note" id="empty" style="margin:0">None yet. Add some above.</p>
+  <ul id="list"></ul>
+  <div class="total"><span id="count"></span><b id="sum">$0.00</b></div>
+  <button class="pay" id="go" disabled></button>
+  <p class="note" id="hint"></p>
+</section>
+
+<section id="done" class="hide">
+  <h2>Your converted pictures</h2>
+  <div class="res" id="res"></div>
+</section>
+</main>
+
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+var cfg={price:75,min:1,max:20}, files=[], session=null, remaining=0;
+var params=new URLSearchParams(location.search);
+
+/* Keep pictures across the Stripe redirect */
+function db(){return new Promise(function(ok,no){var r=indexedDB.open('cfq',1);r.onupgradeneeded=function(){r.result.createObjectStore('k')};r.onsuccess=function(){ok(r.result)};r.onerror=function(){no(r.error)}})}
+function idb(mode,fn){return db().then(function(d){return new Promise(function(ok,no){var t=d.transaction('k',mode),q=fn(t.objectStore('k'));t.oncomplete=function(){ok(q&&q.result)};t.onerror=function(){no(t.error)}})})}
+var idbSet=function(k,v){return idb('readwrite',function(s){return s.put(v,k)})};
+var idbGet=function(k){return idb('readonly',function(s){return s.get(k)})};
+var idbDel=function(k){return idb('readwrite',function(s){return s.delete(k)})};
+
+function fmt(){return document.querySelector('input[name=fmt]:checked').value}
+function money(c){return '$'+(c/100).toFixed(2)}
+function err(m){$('err').textContent=m||'';$('err').classList.toggle('hide',!m)}
+function banner(m){$('banner').textContent=m||'';$('banner').classList.toggle('hide',!m)}
+function api(url,opt){return fetch(url,opt).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error||'Something went wrong.');return j})})}
+
+function add(list){
+  err('');var skipped=0;
+  Array.prototype.forEach.call(list,function(f){
+    if(!/^image\//.test(f.type)&&!/\.(heic|heif|avif)$/i.test(f.name)){skipped++;return}
+    files.push(f);
+  });
+  var cap=session?remaining:cfg.max;
+  if(files.length>cap){files=files.slice(0,cap);err('Limit is '+cap+' picture'+(cap===1?'':'s')+' for this order.')}
+  else if(skipped)err(skipped+' file'+(skipped>1?'s were':' was')+' skipped because it isn’t a picture.');
+  render();
+}
+
+function render(){
+  var ul=$('list');ul.innerHTML='';
+  files.forEach(function(f,i){
+    var li=document.createElement('li'),im=new Image(),nm=document.createElement('div'),b=document.createElement('b'),s=document.createElement('small'),rm=document.createElement('button');
+    im.alt='';im.src=URL.createObjectURL(f);im.onerror=function(){im.style.visibility='hidden'};
+    nm.className='nm';b.textContent=f.name;s.textContent=(f.size/1024).toFixed(0)+' KB';nm.appendChild(b);nm.appendChild(s);
+    rm.className='rm';rm.type='button';rm.textContent='×';rm.setAttribute('aria-label','Remove '+f.name);
+    rm.onclick=function(){files.splice(i,1);render()};
+    li.appendChild(im);li.appendChild(nm);li.appendChild(rm);ul.appendChild(li);
+  });
+  $('empty').classList.toggle('hide',files.length>0);
+  var n=files.length,go=$('go');
+  if(session&&remaining>0){
+    $('count').textContent=n+' of '+remaining+' paid conversions';$('sum').textContent='Paid';
+    go.textContent='Convert '+n+' picture'+(n===1?'':'s');go.disabled=n===0;
+    $('hint').textContent='';
+  }else{
+    $('count').textContent=n+' picture'+(n===1?'':'s')+' × '+money(cfg.price);$('sum').textContent=money(n*cfg.price);
+    go.textContent='Pay '+money(n*cfg.price)+' and convert';go.disabled=n<cfg.min;
+    $('hint').textContent=n<cfg.min?'Add '+(cfg.min===1?'a picture':'at least '+cfg.min+' pictures')+' to continue.':'You’ll pay securely with Stripe, then come straight back here.';
+  }
+}
+
+function startPayment(){
+  var go=$('go');go.disabled=true;go.textContent='Opening checkout…';err('');
+  idbSet('pending',{files:files,format:fmt()})
+   .then(function(){return api('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({count:files.length})})})
+   .then(function(j){location.href=j.url})
+   .catch(function(e){err(e.message);render()});
+}
+
+function convert(){
+  var go=$('go');go.disabled=true;go.textContent='Converting…';err('');
+  var fd=new FormData();fd.append('session_id',session);fd.append('format',fmt());
+  files.forEach(function(f){fd.append('files',f,f.name)});
+  api('/api/convert',{method:'POST',body:fd}).then(function(j){
+    var box=$('res');box.innerHTML='';
+    j.files.forEach(function(o){
+      var src='data:'+o.mime+';base64,'+o.data,fg=document.createElement('figure'),im=new Image(),a=document.createElement('a');
+      if(o.mime==='application/pdf'){im=document.createElement('div');im.className='pdf';im.textContent='PDF'}else{im.src=src;im.alt=o.name}
+      a.href=src;a.download=o.name;a.textContent='Download '+o.name;
+      fg.appendChild(im);fg.appendChild(a);box.appendChild(fg);
+    });
+    $('done').classList.remove('hide');$('done').scrollIntoView({behavior:'smooth'});
+    files=[];remaining=j.remaining;idbDel('pending');
+    if(remaining>0)banner('You have '+remaining+' paid conversion'+(remaining===1?'':'s')+' left. Add more pictures to use them.');
+    else{banner('All done. Thanks!');session=null;history.replaceState(null,'',location.pathname)}
+    render();
+  }).catch(function(e){err(e.message);render()});
+}
+
+$('go').onclick=function(){session&&remaining>0?convert():startPayment()};
+$('file').onchange=function(e){add(e.target.files);e.target.value=''};
+var drop=$('drop');
+['dragenter','dragover'].forEach(function(t){drop.addEventListener(t,function(e){e.preventDefault();drop.classList.add('over')})});
+['dragleave','drop'].forEach(function(t){drop.addEventListener(t,function(e){e.preventDefault();drop.classList.remove('over')})});
+drop.addEventListener('drop',function(e){add(e.dataTransfer.files)});
+
+api('/api/config').then(function(c){cfg=c}).catch(function(){}).then(function(){
+  if(params.get('canceled')){banner('Payment canceled. Your pictures are still here.');
+    idbGet('pending').then(function(p){if(p){files=p.files;render()}});}
+  var id=params.get('session_id');
+  if(id){
+    api('/api/order?session_id='+encodeURIComponent(id)).then(function(o){
+      session=id;remaining=o.remaining;
+      banner('Payment received. '+remaining+' conversion'+(remaining===1?'':'s')+' ready.');
+      return idbGet('pending').then(function(p){
+        if(p){files=p.files.slice(0,remaining);
+          var r=document.querySelector('input[name=fmt][value="'+p.format+'"]');if(r)r.checked=true}
+        render();
+      });
+    }).catch(function(e){err(e.message);render()});
+  }
+  render();
+});
+})();
+</script>
+</body>
+</html>
